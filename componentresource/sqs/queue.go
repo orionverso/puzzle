@@ -11,7 +11,7 @@ type CompanyQueue struct {
 	pulumi.ResourceState
 	QueueArn  pulumi.StringOutput
 	QueueName pulumi.StringOutput
-	Queue     pulumi.IDOutput
+	QueueID   pulumi.IDOutput
 }
 
 type CompanyQueueArgs struct {
@@ -40,12 +40,16 @@ func NewCompanyQueue(ctx *pulumi.Context, name string, args *CompanyQueueArgs, o
 	ctx.RegisterResourceOutputs(componentResource, pulumi.Map{
 		"QueueName": qu.Name,
 		"QueueArn":  qu.Arn,
-		"Queue":     qu.ID(),
+		"QueueID":   qu.ID(),
 	})
 
 	ctx.Export("QueueName", qu.Name)
 	ctx.Export("QueueArn", qu.Arn)
-	ctx.Export("Queue", qu.ID())
+	ctx.Export("QueueID", qu.ID())
+
+	componentResource.QueueArn = qu.Arn
+	componentResource.QueueName = qu.Name
+	componentResource.QueueID = qu.ID()
 
 	return componentResource, nil
 }

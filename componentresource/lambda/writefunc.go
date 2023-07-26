@@ -8,25 +8,27 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-type WriteFunc struct {
+type CompanyFunc struct {
 	pulumi.ResourceState
-	Function pulumi.IDOutput
+	FunctionArn  pulumi.StringOutput
+	FunctionName pulumi.StringOutput
+	FunctionID   pulumi.IDOutput
 }
 
-type WriteFuncArgs struct {
+type CompanyFuncArgs struct {
 	lambda.FunctionArgs
 	iam.RoleArgs
 }
 
-func NewWriteFunc(ctx *pulumi.Context, name string, args *WriteFuncArgs, opts ...pulumi.ResourceOption) (*WriteFunc, error) {
-	componentResource := &WriteFunc{}
+func NewCompanyFunc(ctx *pulumi.Context, name string, args *CompanyFuncArgs, opts ...pulumi.ResourceOption) (*CompanyFunc, error) {
+	componentResource := &CompanyFunc{}
 
 	if args == nil {
-		args = &WriteFuncArgs{}
+		args = &CompanyFuncArgs{}
 	}
 
 	// <package>:<module>:<type>
-	err := ctx.RegisterComponentResource("puzzle:lamdba:WriteFunc", name, componentResource, opts...)
+	err := ctx.RegisterComponentResource("puzzle:lamdba:CompanyFunc", name, componentResource, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,22 +47,19 @@ func NewWriteFunc(ctx *pulumi.Context, name string, args *WriteFuncArgs, opts ..
 		return nil, err
 	}
 
-	ctx.RegisterResourceOutputs(componentResource, pulumi.Map{})
+	ctx.RegisterResourceOutputs(componentResource, pulumi.Map{
+		"FunctionArn":  fn.Arn,
+		"FunctionName": fn.Name,
+		"FunctionID":   fn.ID(),
+	})
 
-	componentResource.Function = fn.ID()
+	ctx.Export("FunctionArn", fn.Arn)
+	ctx.Export("FunctionName", fn.Name)
+	ctx.Export("FunctionID", fn.ID())
+
+	componentResource.FunctionArn = fn.Arn
+	componentResource.FunctionName = fn.Name
+	componentResource.FunctionID = fn.ID()
 
 	return componentResource, nil
-}
-
-func main() {
-	pulumi.Run(func(ctx *pulumi.Context) error {
-
-		//Resource Declaration
-
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
 }

@@ -9,6 +9,9 @@ import (
 
 type CompanyTopic struct {
 	pulumi.ResourceState
+	TopicArn  pulumi.StringOutput
+	TopicName pulumi.StringOutput
+	TopicID   pulumi.IDOutput
 }
 
 type CompanyTopicArgs struct {
@@ -45,13 +48,17 @@ func NewCompanyTopic(ctx *pulumi.Context, name string, args *CompanyTopicArgs, o
 
 	ctx.RegisterResourceOutputs(componentResource, pulumi.Map{
 		"TopicName": tp.Name,
-		"TopicArn":  tp.Name,
+		"TopicArn":  tp.Arn,
 		"Topic":     tp.ID(),
 	})
 
 	ctx.Export("TopicName", tp.Name)
-	ctx.Export("TopicArn", tp.Name)
+	ctx.Export("TopicArn", tp.Arn)
 	ctx.Export("Topic", tp.ID())
+
+	componentResource.TopicName = tp.Name
+	componentResource.TopicArn = tp.Arn
+	componentResource.TopicID = tp.ID()
 
 	return componentResource, nil
 }

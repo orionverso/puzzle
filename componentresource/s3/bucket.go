@@ -9,6 +9,9 @@ import (
 
 type CompanyBucket struct {
 	pulumi.ResourceState
+	BucketArn  pulumi.StringOutput
+	BucketName pulumi.StringOutput
+	BucketID   pulumi.IDOutput
 }
 
 type CompanyBucketArgs struct {
@@ -54,10 +57,18 @@ func NewCompanyBucket(ctx *pulumi.Context, name string, args *CompanyBucketArgs,
 	}
 
 	ctx.RegisterResourceOutputs(componentResource, pulumi.Map{
+		"BucketArn":  bk.Arn,
 		"BucketName": bk.Bucket,
+		"BucketID":   bk.ID(),
 	})
 
+	ctx.Export("BucketArn", bk.Arn)
 	ctx.Export("BucketName", bk.Bucket)
+	ctx.Export("BucketID", bk.ID())
+
+	componentResource.BucketArn = bk.Arn
+	componentResource.BucketName = bk.Bucket
+	componentResource.BucketID = bk.ID()
 
 	return componentResource, nil
 }

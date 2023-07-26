@@ -9,6 +9,9 @@ import (
 
 type CompanyTable struct {
 	pulumi.ResourceState
+	TableArn  pulumi.StringOutput
+	TableName pulumi.StringOutput
+	TableID   pulumi.IDOutput
 }
 
 type CompanyTableArgs struct {
@@ -28,13 +31,25 @@ func NewCompanyTable(ctx *pulumi.Context, name string, args *CompanyTableArgs, o
 		return nil, err
 	}
 
-	_, err = dynamodb.NewTable(ctx, fmt.Sprintf("%s-table", name), &args.TableArgs, pulumi.Parent(componentResource))
+	tb, err := dynamodb.NewTable(ctx, fmt.Sprintf("%s-table", name), &args.TableArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err
 	}
 
-	ctx.RegisterResourceOutputs(componentResource, pulumi.Map{})
+	ctx.RegisterResourceOutputs(componentResource, pulumi.Map{
+		"TableArn":  tb.Arn,
+		"TableName": tb.Name,
+		"TableID":   tb.ID(),
+	})
+
+	ctx.Export("TableArn", tb.Arn)
+	ctx.Export("TableName", tb.Name)
+	ctx.Export("TableID", tb.ID())
+
+	componentResource.TableArn = tb.Arn
+	componentResource.TableName = tb.Name
+	componentResource.TableID = tb.ID()
 
 	return componentResource, nil
 }
