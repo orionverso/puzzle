@@ -13,8 +13,9 @@ type CompanyBucket struct {
 
 type CompanyBucketArgs struct {
 	s3.BucketV2Args
-	s3.BucketLoggingV2Args
+	s3.BucketServerSideEncryptionConfigurationV2Args
 	s3.BucketVersioningV2Args
+	s3.BucketLoggingV2Args
 }
 
 func NewCompanyBucket(ctx *pulumi.Context, name string, args *CompanyBucketArgs, opts ...pulumi.ResourceOption) (*CompanyBucket, error) {
@@ -36,9 +37,9 @@ func NewCompanyBucket(ctx *pulumi.Context, name string, args *CompanyBucketArgs,
 		return nil, err
 	}
 
-	args.BucketLoggingV2Args.Bucket = bk.ID()
+	args.BucketServerSideEncryptionConfigurationV2Args.Bucket = bk.ID()
 
-	_, err = s3.NewBucketLoggingV2(ctx, fmt.Sprintf("%s-logging", name), &args.BucketLoggingV2Args, pulumi.Parent(componentResource))
+	_, err = s3.NewBucketServerSideEncryptionConfigurationV2(ctx, fmt.Sprintf("%s-server-side-encrytion", name), &args.BucketServerSideEncryptionConfigurationV2Args, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err
@@ -46,9 +47,17 @@ func NewCompanyBucket(ctx *pulumi.Context, name string, args *CompanyBucketArgs,
 
 	args.BucketVersioningV2Args.Bucket = bk.ID()
 
-	s3.NewBucketVersioningV2(ctx, fmt.Sprintf("%s-versioning", name), &args.BucketVersioningV2Args, pulumi.Parent(componentResource))
+	_, err = s3.NewBucketVersioningV2(ctx, fmt.Sprintf("%s-versioning", name), &args.BucketVersioningV2Args, pulumi.Parent(componentResource))
 
-	ctx.RegisterResourceOutputs(componentResource, pulumi.Map{})
+	if err != nil {
+		return nil, err
+	}
+
+	ctx.RegisterResourceOutputs(componentResource, pulumi.Map{
+		"BucketName": bk.Bucket,
+	})
+
+	ctx.Export("BucketName", bk.Bucket)
 
 	return componentResource, nil
 }
