@@ -2,39 +2,38 @@ package workload
 
 import (
 	"fmt"
-	mydb "puzzle/componentresource/dynamodb"
 	mylb "puzzle/componentresource/lambda"
+	mys3 "puzzle/componentresource/s3"
 
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/lambda"
+
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-type LambdaDb struct {
+type LambdaS3 struct {
 	pulumi.ResourceState
 }
 
-type LambdaDbArgs struct {
+type LambdaS3Args struct {
 	mylb.CompanyFuncArgs
-	mydb.CompanyTableArgs
+	mys3.CompanyBucketArgs
 }
 
-func NewLambdaDb(ctx *pulumi.Context, name string, args *LambdaDbArgs, opts ...pulumi.ResourceOption) (*LambdaDb, error) {
-	componentResource := &LambdaDb{}
-	// awsconf := config.New(ctx, "aws")
-	// region := awsconf.Get("region")
+func NewLambdaS3(ctx *pulumi.Context, name string, args *LambdaS3Args, opts ...pulumi.ResourceOption) (*LambdaS3, error) {
+	componentResource := &LambdaS3{}
 
 	if args == nil {
-		args = &LambdaDbArgs{}
+		args = &LambdaS3Args{}
 	}
 
 	// <package>:<module>:<type>
-	err := ctx.RegisterComponentResource("puzzle:workload:LambdaDb", name, componentResource, opts...)
+	err := ctx.RegisterComponentResource("puzzle:workload:LambdaS3", name, componentResource, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	tb, err := mydb.NewCompanyTable(ctx, fmt.Sprintf("%s-table", name), &args.CompanyTableArgs, pulumi.Parent(componentResource))
+	bk, err := mys3.NewCompanyBucket(ctx, fmt.Sprintf("%s-bucket", name), &args.CompanyBucketArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err
@@ -47,17 +46,17 @@ func NewLambdaDb(ctx *pulumi.Context, name string, args *LambdaDbArgs, opts ...p
                     "Version": "2012-10-17",
                     "Statement": [{
                         "Effect": "Allow",
-                        "Action": "dynamodb:PutItem",
-                        "Resource": "%s"
+                        "Action": "s3:PutObject",
+                        "Resource": "%s/*"
                     }]
-                }`, tb.TableArn), //asynchronous value
+                }`, bk.BucketArn), //asynchronous value
 	},
 	}
 
 	args.CompanyFuncArgs.Environment = lambda.FunctionEnvironmentArgs{
 		Variables: pulumi.ToStringMapOutput(map[string]pulumi.StringOutput{
-			"STORAGE_SERVICE": pulumi.Sprintf("DYNAMODB"),
-			"DESTINATION":     pulumi.Sprintf("%s", tb.TableName), //asynchronous value
+			"STORAGE_SERVICE": pulumi.Sprintf("S3"),
+			"DESTINATION":     pulumi.Sprintf("%s", bk.BucketName), //asynchronous value
 		}),
 	}
 
@@ -74,7 +73,7 @@ func NewLambdaDb(ctx *pulumi.Context, name string, args *LambdaDbArgs, opts ...p
 
 //This is an example of static configuration to put in main()
 
-// 		args := workload.LambdaDbArgs{
+// 		args := workload.LambdaS3Args{
 // 			CompanyFuncArgs: mylb.CompanyFuncArgs{
 // 				RoleArgs: iam.RoleArgs{
 // 					AssumeRolePolicy: pulumi.String(`{
@@ -102,16 +101,29 @@ func NewLambdaDb(ctx *pulumi.Context, name string, args *LambdaDbArgs, opts ...p
 // 					Timeout:     pulumi.IntPtr(5),
 // 				},
 // 			},
-// 			CompanyTableArgs: mydb.CompanyTableArgs{
-// 				TableArgs: dynamodb.TableArgs{
-// 					Attributes: dynamodb.TableAttributeArray{dynamodb.TableAttributeArgs{
-// 						Name: pulumi.String("id"),
-// 						Type: pulumi.String("S"),
-// 					},
-// 					},
-// 					HashKey:       pulumi.StringPtr("id"),
-// 					ReadCapacity:  pulumi.IntPtr(5),
-// 					WriteCapacity: pulumi.IntPtr(5),
+// 			CompanyBucketArgs: mys3.CompanyBucketArgs{
+//
+// 				BucketV2Args: s3.BucketV2Args{
+// 					ForceDestroy: pulumi.BoolPtr(true),
 // 				},
+// 				BucketServerSideEncryptionConfigurationV2Args: s3.BucketServerSideEncryptionConfigurationV2Args{
+// 					Rules: s3.BucketServerSideEncryptionConfigurationV2RuleArray{
+// 						s3.BucketServerSideEncryptionConfigurationV2RuleArgs{
+// 							ApplyServerSideEncryptionByDefault: &s3.BucketServerSideEncryptionConfigurationV2RuleApplyServerSideEncryptionByDefaultArgs{
+// 								KmsMasterKeyId: pulumi.StringPtr("alias/aws/s3"),
+// 								SseAlgorithm:   pulumi.String("aws:kms"),
+// 							},
+// 							BucketKeyEnabled: pulumi.BoolPtr(true),
+// 						},
+// 					},
+// 				},
+// 				BucketVersioningV2Args: s3.BucketVersioningV2Args{
+// 					VersioningConfiguration: s3.BucketVersioningV2VersioningConfigurationArgs{
+// 						Status: pulumi.String("Enabled"),
+// 					},
+// 				},
+// 				BucketLoggingV2Args: s3.BucketLoggingV2Args{},
 // 			},
 // 		}
+//
+//
