@@ -29,12 +29,12 @@ func NewLambdaDb(ctx *pulumi.Context, name string, args *LambdaDbArgs, opts ...p
 	}
 
 	// <package>:<module>:<type>
-	err := ctx.RegisterComponentResource("puzzle:workload:LambdaDb", name, componentResource, opts...)
+	err := ctx.RegisterComponentResource("puzzle:workload:LambdaStorage", name, componentResource, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	tb, err := mydb.NewCompanyTable(ctx, fmt.Sprintf("%s-table", name), &args.CompanyTableArgs, pulumi.Parent(componentResource))
+	tb, err := mydb.NewCompanyTable(ctx, fmt.Sprintf("%s-companytable", name), &args.CompanyTableArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func NewLambdaDb(ctx *pulumi.Context, name string, args *LambdaDbArgs, opts ...p
 		}),
 	}
 
-	_, err = mylb.NewCompanyFunc(ctx, fmt.Sprintf("%s-func", name), &args.CompanyFuncArgs, pulumi.Parent(componentResource))
+	_, err = mylb.NewCompanyFunc(ctx, fmt.Sprintf("%s-companyfunc", name), &args.CompanyFuncArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err

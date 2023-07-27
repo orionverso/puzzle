@@ -28,12 +28,12 @@ func NewLambdaS3(ctx *pulumi.Context, name string, args *LambdaS3Args, opts ...p
 	}
 
 	// <package>:<module>:<type>
-	err := ctx.RegisterComponentResource("puzzle:workload:LambdaS3", name, componentResource, opts...)
+	err := ctx.RegisterComponentResource("puzzle:workload:LambdaStorage", name, componentResource, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	bk, err := mys3.NewCompanyBucket(ctx, fmt.Sprintf("%s-bucket", name), &args.CompanyBucketArgs, pulumi.Parent(componentResource))
+	bk, err := mys3.NewCompanyBucket(ctx, fmt.Sprintf("%s-companybucket", name), &args.CompanyBucketArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func NewLambdaS3(ctx *pulumi.Context, name string, args *LambdaS3Args, opts ...p
 		}),
 	}
 
-	_, err = mylb.NewCompanyFunc(ctx, fmt.Sprintf("%s-func", name), &args.CompanyFuncArgs, pulumi.Parent(componentResource))
+	_, err = mylb.NewCompanyFunc(ctx, fmt.Sprintf("%s-companyfunc", name), &args.CompanyFuncArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err

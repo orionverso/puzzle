@@ -1,7 +1,7 @@
 package main
 
 import (
-	wk "puzzle/componentresource/workload"
+	"puzzle/componentresource/workload"
 
 	mylb "puzzle/componentresource/lambda"
 	mys3 "puzzle/componentresource/s3"
@@ -16,25 +16,70 @@ func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
 
 		//static configurations
-		args := wk.LambdaS3Args{
+
+		// 	args := workload.LambdaDbArgs{
+		// 		CompanyFuncArgs: mylb.CompanyFuncArgs{
+		// 			RoleArgs: iam.RoleArgs{
+		// 				AssumeRolePolicy: pulumi.String(`{
+		//     "Version": "2012-10-17",
+		//     "Statement": [
+		//         {
+		//             "Effect": "Allow",
+		//             "Action": [
+		//                 "sts:AssumeRole"
+		//             ],
+		//             "Principal": {
+		//                 "Service": [
+		//                     "lambda.amazonaws.com"
+		//                 ]
+		//             }
+		//         }
+		//     ]
+		// }`),
+		// 			},
+		// 			FunctionArgs: lambda.FunctionArgs{
+		// 				Runtime:     pulumi.StringPtr("go1.x"),
+		// 				Code:        pulumi.NewFileArchive("./asset/lambda/sqs/handler.zip"),
+		// 				Handler:     pulumi.StringPtr("handler"),
+		// 				Description: pulumi.StringPtr("This function goes to write to table"),
+		// 				Timeout:     pulumi.IntPtr(5),
+		// 			},
+		// 		},
+		// 		CompanyTableArgs: mydb.CompanyTableArgs{
+		// 			TableArgs: dynamodb.TableArgs{
+		// 				Attributes: dynamodb.TableAttributeArray{dynamodb.TableAttributeArgs{
+		// 					Name: pulumi.String("id"),
+		// 					Type: pulumi.String("S"),
+		// 				},
+		// 				},
+		// 				HashKey:       pulumi.StringPtr("id"),
+		// 				ReadCapacity:  pulumi.IntPtr(5),
+		// 				WriteCapacity: pulumi.IntPtr(5),
+		// 			},
+		// 		},
+		// 	}
+		//
+		// 	workload.NewLambdaDb(ctx, "LambdaWriteToStorage", &args)
+
+		args1 := workload.LambdaS3Args{
 			CompanyFuncArgs: mylb.CompanyFuncArgs{
 				RoleArgs: iam.RoleArgs{
 					AssumeRolePolicy: pulumi.String(`{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "sts:AssumeRole"
-            ],
-            "Principal": {
-                "Service": [
-                    "lambda.amazonaws.com"
-                ]
-            }
-        }
-    ]
-}`),
+     "Version": "2012-10-17",
+     "Statement": [
+         {
+             "Effect": "Allow",
+             "Action": [
+                 "sts:AssumeRole"
+             ],
+             "Principal": {
+                 "Service": [
+                     "lambda.amazonaws.com"
+                 ]
+             }
+         }
+     ]
+ }`),
 				},
 				FunctionArgs: lambda.FunctionArgs{
 					Runtime:     pulumi.StringPtr("go1.x"),
@@ -69,7 +114,7 @@ func main() {
 			},
 		}
 
-		wk.NewLambdaS3(ctx, "MyLambdaDb", &args)
+		workload.NewLambdaS3(ctx, "LambdaWriteToStorage", &args1)
 
 		return nil
 	})
