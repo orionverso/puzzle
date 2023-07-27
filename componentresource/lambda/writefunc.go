@@ -39,7 +39,7 @@ func NewCompanyFunc(ctx *pulumi.Context, name string, args *CompanyFuncArgs, opt
 		return nil, err
 	}
 
-	args.FunctionArgs.Role = rl.ID()
+	args.FunctionArgs.Role = rl.Arn
 
 	fn, err := lambda.NewFunction(ctx, fmt.Sprintf("%s-function", name), &args.FunctionArgs, pulumi.Parent(componentResource))
 
