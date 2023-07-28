@@ -1,7 +1,6 @@
 package board
 
 import (
-	"fmt"
 	"puzzle/pieces"
 
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam"
@@ -35,14 +34,14 @@ func NewFuncTable(ctx *pulumi.Context, name string, args *FuncTableArgs, opts ..
 		return nil, err
 	}
 
-	tb, err := pieces.NewCompanyTable(ctx, fmt.Sprintf("%s-companytable", name), &args.CompanyTableArgs, pulumi.Parent(componentResource))
+	tb, err := pieces.NewCompanyTable(ctx, "companytable", &args.CompanyTableArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err
 	}
 
 	//dynamyc configurations
-	args.CompanyFuncArgs.RoleArgs.InlinePolicies = iam.RoleInlinePolicyArray{iam.RoleInlinePolicyArgs{
+	inlineargs := iam.RoleInlinePolicyArgs{
 		Name: pulumi.String("WriteToDynamoDb"),
 		Policy: pulumi.Sprintf(`{ 
                     "Version": "2012-10-17",
@@ -52,8 +51,9 @@ func NewFuncTable(ctx *pulumi.Context, name string, args *FuncTableArgs, opts ..
                         "Resource": "%s"
                     }]
                 }`, tb.TableArn), //asynchronous value
-	},
 	}
+
+	args.CompanyFuncArgs.AppendPolicyToInlinePolicies(inlineargs)
 
 	args.CompanyFuncArgs.Environment = lambda.FunctionEnvironmentArgs{
 		Variables: pulumi.ToStringMapOutput(map[string]pulumi.StringOutput{
@@ -62,7 +62,7 @@ func NewFuncTable(ctx *pulumi.Context, name string, args *FuncTableArgs, opts ..
 		}),
 	}
 
-	fn, err := pieces.NewCompanyFunc(ctx, fmt.Sprintf("%s-companyfunc", name), &args.CompanyFuncArgs, pulumi.Parent(componentResource))
+	fn, err := pieces.NewCompanyFunc(ctx, "companyfunc", &args.CompanyFuncArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err

@@ -13,6 +13,8 @@ type CompanyFunc struct {
 	FunctionArn  pulumi.StringOutput
 	FunctionName pulumi.StringOutput
 	FunctionID   pulumi.IDOutput
+	RoleArn      pulumi.StringOutput
+	RoleName     pulumi.StringOutput
 }
 
 type CompanyFuncArgs struct {
@@ -39,6 +41,15 @@ func NewCompanyFunc(ctx *pulumi.Context, name string, args *CompanyFuncArgs, opt
 		return nil, err
 	}
 
+	_, err = iam.NewRolePolicyAttachment(ctx, "lambdaRoleAttachLambdaBasicExecutionRole", &iam.RolePolicyAttachmentArgs{
+		Role:      rl.Name,
+		PolicyArn: pulumi.String("arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"),
+	}, pulumi.Parent(componentResource))
+
+	if err != nil {
+		return nil, err
+	}
+
 	args.FunctionArgs.Role = rl.Arn
 
 	fn, err := lambda.NewFunction(ctx, fmt.Sprintf("%s-function", name), &args.FunctionArgs, pulumi.Parent(componentResource))
@@ -51,6 +62,8 @@ func NewCompanyFunc(ctx *pulumi.Context, name string, args *CompanyFuncArgs, opt
 		"FunctionArn":  fn.Arn,
 		"FunctionName": fn.Name,
 		"FunctionID":   fn.ID(),
+		"RoleArn":      rl.Arn,
+		"RoleName":     rl.Name,
 	})
 
 	ctx.Export("FunctionArn", fn.Arn)
@@ -61,5 +74,21 @@ func NewCompanyFunc(ctx *pulumi.Context, name string, args *CompanyFuncArgs, opt
 	componentResource.FunctionName = fn.Name
 	componentResource.FunctionID = fn.ID()
 
+	componentResource.RoleName = rl.Arn
+	componentResource.RoleName = rl.Name
+
 	return componentResource, nil
+}
+
+func (args *CompanyFuncArgs) AppendPolicyToInlinePolicies(policyargs iam.RoleInlinePolicyArgs) {
+
+	if _, ok := args.RoleArgs.InlinePolicies.(iam.RoleInlinePolicyArray); !ok {
+		args.RoleArgs.InlinePolicies = iam.RoleInlinePolicyArray([]iam.RoleInlinePolicyInput{})
+	}
+
+	var inlineslice []iam.RoleInlinePolicyInput = []iam.RoleInlinePolicyInput(args.RoleArgs.InlinePolicies.(iam.RoleInlinePolicyArray))
+
+	inlineslice = append(inlineslice, policyargs)
+
+	args.RoleArgs.InlinePolicies = iam.RoleInlinePolicyArray(inlineslice)
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/lambda"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/sqs"
 
 	// "github.com/pulumi/pulumi-aws/sdk/v5/go/aws/s3"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/dynamodb"
@@ -16,11 +17,15 @@ func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
 
 		//static configurations
+		args := board.QueueFuncTableArgs{
+			CompanyQueueArgs: pieces.CompanyQueueArgs{
+				QueueArgs: sqs.QueueArgs{},
+			},
 
-		args := board.FuncTableArgs{
-			CompanyFuncArgs: pieces.CompanyFuncArgs{
-				RoleArgs: iam.RoleArgs{
-					AssumeRolePolicy: pulumi.String(`{
+			FuncTableArgs: board.FuncTableArgs{
+				CompanyFuncArgs: pieces.CompanyFuncArgs{
+					RoleArgs: iam.RoleArgs{
+						AssumeRolePolicy: pulumi.String(`{
 		    "Version": "2012-10-17",
 		    "Statement": [
 		        {
@@ -36,30 +41,32 @@ func main() {
 		        }
 		    ]
 		}`),
-				},
-				FunctionArgs: lambda.FunctionArgs{
-					Runtime:     pulumi.StringPtr("go1.x"),
-					Code:        pulumi.NewFileArchive("./asset/lambda/sqs/handler.zip"),
-					Handler:     pulumi.StringPtr("handler"),
-					Description: pulumi.StringPtr("This function goes to write to table"),
-					Timeout:     pulumi.IntPtr(5),
-				},
-			},
-			CompanyTableArgs: pieces.CompanyTableArgs{
-				TableArgs: dynamodb.TableArgs{
-					Attributes: dynamodb.TableAttributeArray{dynamodb.TableAttributeArgs{
-						Name: pulumi.String("id"),
-						Type: pulumi.String("S"),
+						InlinePolicies: iam.RoleInlinePolicyArray([]iam.RoleInlinePolicyInput{}), //initialize
 					},
+					FunctionArgs: lambda.FunctionArgs{
+						Runtime:     pulumi.StringPtr("go1.x"),
+						Code:        pulumi.NewFileArchive("./asset/lambda/sqs/handler.zip"),
+						Handler:     pulumi.StringPtr("handler"),
+						Description: pulumi.StringPtr("This function goes to write to table"),
+						Timeout:     pulumi.IntPtr(5),
 					},
-					HashKey:       pulumi.StringPtr("id"),
-					ReadCapacity:  pulumi.IntPtr(5),
-					WriteCapacity: pulumi.IntPtr(5),
+				},
+				CompanyTableArgs: pieces.CompanyTableArgs{
+					TableArgs: dynamodb.TableArgs{
+						Attributes: dynamodb.TableAttributeArray{dynamodb.TableAttributeArgs{
+							Name: pulumi.String("id"),
+							Type: pulumi.String("S"),
+						},
+						},
+						HashKey:       pulumi.StringPtr("id"),
+						ReadCapacity:  pulumi.IntPtr(5),
+						WriteCapacity: pulumi.IntPtr(5),
+					},
 				},
 			},
 		}
 
-		board.NewFuncTable(ctx, "LambdaWriteToStorage", &args)
+		board.NewQueueFuncTable(ctx, "QueueTriggerLambdaWriteToStorage", &args)
 
 		// args1 := board.FuncBucketArgs{
 		// 	CompanyFuncArgs: pieces.CompanyFuncArgs{
