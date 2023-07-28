@@ -9,13 +9,14 @@ import (
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/sqs"
 
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/s3"
+	// "github.com/pulumi/pulumi-aws/sdk/v5/go/aws/dynamodb"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
 
-		//static configuration
+		// static configuration
 		args := board.QueueFuncBucketArgs{
 			CompanyQueueArgs: pieces.CompanyQueueArgs{
 				QueueArgs: sqs.QueueArgs{},
@@ -25,21 +26,21 @@ func main() {
 				CompanyFuncArgs: pieces.CompanyFuncArgs{
 					RoleArgs: iam.RoleArgs{
 						AssumeRolePolicy: pulumi.String(`{
-		    "Version": "2012-10-17",
-		    "Statement": [
-		        {
-		            "Effect": "Allow",
-		            "Action": [
-		                "sts:AssumeRole"
-		            ],
-		            "Principal": {
-		                "Service": [
-		                    "lambda.amazonaws.com"
-		                ]
-		            }
-		        }
-		    ]
-		}`),
+		     "Version": "2012-10-17",
+		     "Statement": [
+		         {
+		             "Effect": "Allow",
+		             "Action": [
+		                 "sts:AssumeRole"
+		             ],
+		             "Principal": {
+		                 "Service": [
+		                     "lambda.amazonaws.com"
+		                 ]
+		             }
+		         }
+		     ]
+		 }`),
 					},
 					FunctionArgs: lambda.FunctionArgs{
 						Runtime:     pulumi.StringPtr("go1.x"),
@@ -76,6 +77,56 @@ func main() {
 		}
 
 		board.NewQueueFuncBucket(ctx, "QueueTriggerLambdaWriteToStorage", &args)
+
+		// 		args := board.QueueFuncTableArgs{
+		// 			CompanyQueueArgs: pieces.CompanyQueueArgs{
+		// 				QueueArgs: sqs.QueueArgs{},
+		// 			},
+		//
+		// 			FuncTableArgs: board.FuncTableArgs{
+		// 				CompanyFuncArgs: pieces.CompanyFuncArgs{
+		// 					RoleArgs: iam.RoleArgs{
+		// 						AssumeRolePolicy: pulumi.String(`{
+		//     "Version": "2012-10-17",
+		//     "Statement": [
+		//         {
+		//             "Effect": "Allow",
+		//             "Action": [
+		//                 "sts:AssumeRole"
+		//             ],
+		//             "Principal": {
+		//                 "Service": [
+		//                     "lambda.amazonaws.com"
+		//                 ]
+		//             }
+		//         }
+		//     ]
+		// }`),
+		// 					},
+		// 					FunctionArgs: lambda.FunctionArgs{
+		// 						Runtime:     pulumi.StringPtr("go1.x"),
+		// 						Code:        pulumi.NewFileArchive("./asset/lambda/sqs/handler.zip"),
+		// 						Handler:     pulumi.StringPtr("handler"),
+		// 						Description: pulumi.StringPtr("This function goes to write to table"),
+		// 						Timeout:     pulumi.IntPtr(5),
+		// 					},
+		// 				},
+		// 				CompanyTableArgs: pieces.CompanyTableArgs{
+		// 					TableArgs: dynamodb.TableArgs{
+		// 						Attributes: dynamodb.TableAttributeArray{dynamodb.TableAttributeArgs{
+		// 							Name: pulumi.String("id"),
+		// 							Type: pulumi.String("S"),
+		// 						},
+		// 						},
+		// 						HashKey:       pulumi.StringPtr("id"),
+		// 						ReadCapacity:  pulumi.IntPtr(5),
+		// 						WriteCapacity: pulumi.IntPtr(5),
+		// 					},
+		// 				},
+		// 			},
+		// 		}
+		//
+		// 		board.NewQueueFuncTable(ctx, "QueueTriggerLambdaWriteToStorage", &args)
 
 		return nil
 	})

@@ -1,6 +1,7 @@
 package board
 
 import (
+	"fmt"
 	"puzzle/pieces"
 
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam"
@@ -29,12 +30,12 @@ func NewFuncTable(ctx *pulumi.Context, name string, args *FuncTableArgs, opts ..
 	}
 
 	// <package>:<module>:<type>
-	err := ctx.RegisterComponentResource("puzzle:board:LambdaStorage", name, componentResource, opts...)
+	err := ctx.RegisterComponentResource(fmt.Sprintf("puzzle:board:%s", writeandsave), name, componentResource, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	tb, err := pieces.NewCompanyTable(ctx, "companytable", &args.CompanyTableArgs, pulumi.Parent(componentResource))
+	tb, err := pieces.NewCompanyTable(ctx, saver, &args.CompanyTableArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err
@@ -62,7 +63,7 @@ func NewFuncTable(ctx *pulumi.Context, name string, args *FuncTableArgs, opts ..
 		}),
 	}
 
-	fn, err := pieces.NewCompanyFunc(ctx, "companyfunc", &args.CompanyFuncArgs, pulumi.Parent(componentResource))
+	fn, err := pieces.NewCompanyFunc(ctx, writer, &args.CompanyFuncArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err

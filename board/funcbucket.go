@@ -29,12 +29,12 @@ func NewFuncBucket(ctx *pulumi.Context, name string, args *FuncBucketArgs, opts 
 	}
 
 	// <package>:<module>:<type>
-	err := ctx.RegisterComponentResource("puzzle:board:LambdaStorage", name, componentResource, opts...)
+	err := ctx.RegisterComponentResource(fmt.Sprintf("puzzle:board:%s", writeandsave), name, componentResource, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	bk, err := pieces.NewCompanyBucket(ctx, fmt.Sprintf("%s-companybucket", name), &args.CompanyBucketArgs, pulumi.Parent(componentResource))
+	bk, err := pieces.NewCompanyBucket(ctx, saver, &args.CompanyBucketArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func NewFuncBucket(ctx *pulumi.Context, name string, args *FuncBucketArgs, opts 
 		}),
 	}
 
-	fn, err := pieces.NewCompanyFunc(ctx, fmt.Sprintf("%s-companyfunc", name), &args.CompanyFuncArgs, pulumi.Parent(componentResource))
+	fn, err := pieces.NewCompanyFunc(ctx, writer, &args.CompanyFuncArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err

@@ -29,12 +29,12 @@ func NewQueueFuncTable(ctx *pulumi.Context, name string, args *QueueFuncTableArg
 	}
 
 	// <package>:<module>:<type>
-	err := ctx.RegisterComponentResource("puzzle:board:MessageTriggerFuncTable", name, componentResource, opts...)
+	err := ctx.RegisterComponentResource(fmt.Sprintf("puzzle:board:%s", triggerwriteandsave), name, componentResource, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	qu, err := pieces.NewCompanyQueue(ctx, "companyqueue", &args.CompanyQueueArgs, pulumi.Parent(componentResource))
+	qu, err := pieces.NewCompanyQueue(ctx, trigger, &args.CompanyQueueArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func NewQueueFuncTable(ctx *pulumi.Context, name string, args *QueueFuncTableArg
 
 	args.FuncTableArgs.CompanyFuncArgs.AppendPolicyToInlinePolicies(inlineargs)
 
-	fntb, err := NewFuncTable(ctx, "functable", &args.FuncTableArgs, pulumi.Parent(componentResource))
+	fntb, err := NewFuncTable(ctx, writeandsave, &args.FuncTableArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err
