@@ -82,3 +82,54 @@ func NewQueueFuncTable(ctx *pulumi.Context, name string, args *QueueFuncTableArg
 
 	return componentResource, nil
 }
+
+//This is an example of static configuration to put in main()
+// 		args := board.QueueFuncTableArgs{
+// 			CompanyQueueArgs: pieces.CompanyQueueArgs{
+// 				QueueArgs: sqs.QueueArgs{},
+// 			},
+//
+// 			FuncTableArgs: board.FuncTableArgs{
+// 				CompanyFuncArgs: pieces.CompanyFuncArgs{
+// 					RoleArgs: iam.RoleArgs{
+// 						AssumeRolePolicy: pulumi.String(`{
+//     "Version": "2012-10-17",
+//     "Statement": [
+//         {
+//             "Effect": "Allow",
+//             "Action": [
+//                 "sts:AssumeRole"
+//             ],
+//             "Principal": {
+//                 "Service": [
+//                     "lambda.amazonaws.com"
+//                 ]
+//             }
+//         }
+//     ]
+// }`),
+// 					},
+// 					FunctionArgs: lambda.FunctionArgs{
+// 						Runtime:     pulumi.StringPtr("go1.x"),
+// 						Code:        pulumi.NewFileArchive("./asset/lambda/sqs/handler.zip"),
+// 						Handler:     pulumi.StringPtr("handler"),
+// 						Description: pulumi.StringPtr("This function goes to write to table"),
+// 						Timeout:     pulumi.IntPtr(5),
+// 					},
+// 				},
+// 				CompanyTableArgs: pieces.CompanyTableArgs{
+// 					TableArgs: dynamodb.TableArgs{
+// 						Attributes: dynamodb.TableAttributeArray{dynamodb.TableAttributeArgs{
+// 							Name: pulumi.String("id"),
+// 							Type: pulumi.String("S"),
+// 						},
+// 						},
+// 						HashKey:       pulumi.StringPtr("id"),
+// 						ReadCapacity:  pulumi.IntPtr(5),
+// 						WriteCapacity: pulumi.IntPtr(5),
+// 					},
+// 				},
+// 			},
+// 		}
+//
+// 		board.NewQueueFuncTable(ctx, "QueueTriggerLambdaWriteToStorage", &args)

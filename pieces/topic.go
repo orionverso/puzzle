@@ -38,14 +38,6 @@ func NewCompanyTopic(ctx *pulumi.Context, name string, args *CompanyTopicArgs, o
 		return nil, err
 	}
 
-	args.TopicSubscriptionArgs.Topic = tp.ID()
-
-	_, err = sns.NewTopicSubscription(ctx, fmt.Sprintf("%s-subscription", name), &args.TopicSubscriptionArgs, pulumi.Parent(componentResource))
-
-	if err != nil {
-		return nil, err
-	}
-
 	ctx.RegisterResourceOutputs(componentResource, pulumi.Map{
 		"TopicName": tp.Name,
 		"TopicArn":  tp.Arn,
