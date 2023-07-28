@@ -1,9 +1,8 @@
-package workload
+package board
 
 import (
 	"fmt"
-	mylb "puzzle/componentresource/lambda"
-	mys3 "puzzle/componentresource/s3"
+	"puzzle/pieces"
 
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/lambda"
@@ -11,29 +10,29 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-type LambdaS3 struct {
+type FuncBucket struct {
 	pulumi.ResourceState
 }
 
-type LambdaS3Args struct {
-	mylb.CompanyFuncArgs
-	mys3.CompanyBucketArgs
+type FuncBucketArgs struct {
+	pieces.CompanyFuncArgs
+	pieces.CompanyBucketArgs
 }
 
-func NewLambdaS3(ctx *pulumi.Context, name string, args *LambdaS3Args, opts ...pulumi.ResourceOption) (*LambdaS3, error) {
-	componentResource := &LambdaS3{}
+func NewFuncBucket(ctx *pulumi.Context, name string, args *FuncBucketArgs, opts ...pulumi.ResourceOption) (*FuncBucket, error) {
+	componentResource := &FuncBucket{}
 
 	if args == nil {
-		args = &LambdaS3Args{}
+		args = &FuncBucketArgs{}
 	}
 
 	// <package>:<module>:<type>
-	err := ctx.RegisterComponentResource("puzzle:workload:LambdaStorage", name, componentResource, opts...)
+	err := ctx.RegisterComponentResource("puzzle:board:LambdaStorage", name, componentResource, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	bk, err := mys3.NewCompanyBucket(ctx, fmt.Sprintf("%s-companybucket", name), &args.CompanyBucketArgs, pulumi.Parent(componentResource))
+	bk, err := pieces.NewCompanyBucket(ctx, fmt.Sprintf("%s-companybucket", name), &args.CompanyBucketArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err
@@ -60,7 +59,7 @@ func NewLambdaS3(ctx *pulumi.Context, name string, args *LambdaS3Args, opts ...p
 		}),
 	}
 
-	_, err = mylb.NewCompanyFunc(ctx, fmt.Sprintf("%s-companyfunc", name), &args.CompanyFuncArgs, pulumi.Parent(componentResource))
+	_, err = pieces.NewCompanyFunc(ctx, fmt.Sprintf("%s-companyfunc", name), &args.CompanyFuncArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err
@@ -73,8 +72,8 @@ func NewLambdaS3(ctx *pulumi.Context, name string, args *LambdaS3Args, opts ...p
 
 //This is an example of static configuration to put in main()
 
-// 		args := workload.LambdaS3Args{
-// 			CompanyFuncArgs: mylb.CompanyFuncArgs{
+// 		args := board.FuncBucketArgs{
+// 			CompanyFuncArgs: pieces.CompanyFuncArgs{
 // 				RoleArgs: iam.RoleArgs{
 // 					AssumeRolePolicy: pulumi.String(`{
 //     "Version": "2012-10-17",
@@ -101,7 +100,7 @@ func NewLambdaS3(ctx *pulumi.Context, name string, args *LambdaS3Args, opts ...p
 // 					Timeout:     pulumi.IntPtr(5),
 // 				},
 // 			},
-// 			CompanyBucketArgs: mys3.CompanyBucketArgs{
+// 			CompanyBucketArgs: pieces.CompanyBucketArgs{
 //
 // 				BucketV2Args: s3.BucketV2Args{
 // 					ForceDestroy: pulumi.BoolPtr(true),

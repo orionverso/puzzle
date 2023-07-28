@@ -1,4 +1,4 @@
-package sqs
+package pieces
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ func NewCompanyQueue(ctx *pulumi.Context, name string, args *CompanyQueueArgs, o
 	}
 
 	// <package>:<module>:<type>
-	err := ctx.RegisterComponentResource("puzzle:sqs:CompanyQueue", name, componentResource, opts...)
+	err := ctx.RegisterComponentResource("puzzle:pieces:CompanyQueue", name, componentResource, opts...)
 	if err != nil {
 		return nil, err
 	}

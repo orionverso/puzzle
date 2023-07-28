@@ -1,4 +1,4 @@
-package s3
+package pieces
 
 import (
 	"fmt"
@@ -29,7 +29,7 @@ func NewCompanyBucket(ctx *pulumi.Context, name string, args *CompanyBucketArgs,
 	}
 
 	// <package>:<module>:<type>
-	err := ctx.RegisterComponentResource("puzzle:s3:CompanyBucket", name, componentResource, opts...)
+	err := ctx.RegisterComponentResource("puzzle:pieces:CompanyBucket", name, componentResource, opts...)
 	if err != nil {
 		return nil, err
 	}

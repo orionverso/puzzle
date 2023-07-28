@@ -1,4 +1,4 @@
-package sns
+package pieces
 
 import (
 	"fmt"
@@ -27,7 +27,7 @@ func NewCompanyTopic(ctx *pulumi.Context, name string, args *CompanyTopicArgs, o
 	}
 
 	// <package>:<module>:<type>
-	err := ctx.RegisterComponentResource("puzzle:sns:CompanyTopic", name, componentResource, opts...)
+	err := ctx.RegisterComponentResource("puzzle:pieces:CompanyTopic", name, componentResource, opts...)
 	if err != nil {
 		return nil, err
 	}

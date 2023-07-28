@@ -1,4 +1,4 @@
-package lambda
+package pieces
 
 import (
 	"fmt"
@@ -28,11 +28,11 @@ func NewCompanyFunc(ctx *pulumi.Context, name string, args *CompanyFuncArgs, opt
 	}
 
 	// <package>:<module>:<type>
-	err := ctx.RegisterComponentResource("puzzle:lamdba:CompanyFunc", name, componentResource, opts...)
+	err := ctx.RegisterComponentResource("puzzle:pieces:CompanyFunc", name, componentResource, opts...)
 	if err != nil {
 		return nil, err
 	}
-
+	// for simplicity we are not going to consider a role a piece
 	rl, err := iam.NewRole(ctx, fmt.Sprintf("%s-role", name), &args.RoleArgs, pulumi.Parent(componentResource))
 
 	if err != nil {

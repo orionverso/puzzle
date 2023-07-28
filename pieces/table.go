@@ -1,4 +1,4 @@
-package dynamodb
+package pieces
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ func NewCompanyTable(ctx *pulumi.Context, name string, args *CompanyTableArgs, o
 	}
 
 	// <package>:<module>:<type>
-	err := ctx.RegisterComponentResource("puzzle:dynamodb:CompanyTable", name, componentResource, opts...)
+	err := ctx.RegisterComponentResource("puzzle:pieces:CompanyTable", name, componentResource, opts...)
 	if err != nil {
 		return nil, err
 	}

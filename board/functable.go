@@ -1,40 +1,41 @@
-package workload
+package board
 
 import (
 	"fmt"
-	mydb "puzzle/componentresource/dynamodb"
-	mylb "puzzle/componentresource/lambda"
+	"puzzle/pieces"
 
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/lambda"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-type LambdaDb struct {
+type FuncTable struct {
 	pulumi.ResourceState
+	*pieces.CompanyFunc
+	*pieces.CompanyTable
 }
 
-type LambdaDbArgs struct {
-	mylb.CompanyFuncArgs
-	mydb.CompanyTableArgs
+type FuncTableArgs struct {
+	pieces.CompanyFuncArgs
+	pieces.CompanyTableArgs
 }
 
-func NewLambdaDb(ctx *pulumi.Context, name string, args *LambdaDbArgs, opts ...pulumi.ResourceOption) (*LambdaDb, error) {
-	componentResource := &LambdaDb{}
+func NewFuncTable(ctx *pulumi.Context, name string, args *FuncTableArgs, opts ...pulumi.ResourceOption) (*FuncTable, error) {
+	componentResource := &FuncTable{}
 	// awsconf := config.New(ctx, "aws")
 	// region := awsconf.Get("region")
 
 	if args == nil {
-		args = &LambdaDbArgs{}
+		args = &FuncTableArgs{}
 	}
 
 	// <package>:<module>:<type>
-	err := ctx.RegisterComponentResource("puzzle:workload:LambdaStorage", name, componentResource, opts...)
+	err := ctx.RegisterComponentResource("puzzle:board:LambdaStorage", name, componentResource, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	tb, err := mydb.NewCompanyTable(ctx, fmt.Sprintf("%s-companytable", name), &args.CompanyTableArgs, pulumi.Parent(componentResource))
+	tb, err := pieces.NewCompanyTable(ctx, fmt.Sprintf("%s-companytable", name), &args.CompanyTableArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err
@@ -61,7 +62,7 @@ func NewLambdaDb(ctx *pulumi.Context, name string, args *LambdaDbArgs, opts ...p
 		}),
 	}
 
-	_, err = mylb.NewCompanyFunc(ctx, fmt.Sprintf("%s-companyfunc", name), &args.CompanyFuncArgs, pulumi.Parent(componentResource))
+	fn, err := pieces.NewCompanyFunc(ctx, fmt.Sprintf("%s-companyfunc", name), &args.CompanyFuncArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err
@@ -69,13 +70,16 @@ func NewLambdaDb(ctx *pulumi.Context, name string, args *LambdaDbArgs, opts ...p
 
 	ctx.RegisterResourceOutputs(componentResource, pulumi.Map{})
 
+	componentResource.CompanyFunc = fn
+	componentResource.CompanyTable = tb
+
 	return componentResource, nil
 }
 
 //This is an example of static configuration to put in main()
 
-// 		args := workload.LambdaDbArgs{
-// 			CompanyFuncArgs: mylb.CompanyFuncArgs{
+// 		args := board.FuncTableArgs{
+// 			CompanyFuncArgs: pieces.CompanyFuncArgs{
 // 				RoleArgs: iam.RoleArgs{
 // 					AssumeRolePolicy: pulumi.String(`{
 //     "Version": "2012-10-17",
@@ -102,7 +106,7 @@ func NewLambdaDb(ctx *pulumi.Context, name string, args *LambdaDbArgs, opts ...p
 // 					Timeout:     pulumi.IntPtr(5),
 // 				},
 // 			},
-// 			CompanyTableArgs: mydb.CompanyTableArgs{
+// 			CompanyTableArgs: pieces.CompanyTableArgs{
 // 				TableArgs: dynamodb.TableArgs{
 // 					Attributes: dynamodb.TableAttributeArray{dynamodb.TableAttributeArgs{
 // 						Name: pulumi.String("id"),
