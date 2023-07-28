@@ -12,6 +12,8 @@ import (
 
 type FuncBucket struct {
 	pulumi.ResourceState
+	*pieces.CompanyFunc
+	*pieces.CompanyBucket
 }
 
 type FuncBucketArgs struct {
@@ -39,8 +41,8 @@ func NewFuncBucket(ctx *pulumi.Context, name string, args *FuncBucketArgs, opts 
 	}
 
 	//dynamyc configurations
-	args.CompanyFuncArgs.RoleArgs.InlinePolicies = iam.RoleInlinePolicyArray{iam.RoleInlinePolicyArgs{
-		Name: pulumi.String("WriteToDynamoDb"),
+	inlineargs := iam.RoleInlinePolicyArgs{
+		Name: pulumi.String("WriteToBucket"),
 		Policy: pulumi.Sprintf(`{ 
                     "Version": "2012-10-17",
                     "Statement": [{
@@ -49,8 +51,9 @@ func NewFuncBucket(ctx *pulumi.Context, name string, args *FuncBucketArgs, opts 
                         "Resource": "%s/*"
                     }]
                 }`, bk.BucketArn), //asynchronous value
-	},
 	}
+
+	args.CompanyFuncArgs.AppendPolicyToInlinePolicies(inlineargs)
 
 	args.CompanyFuncArgs.Environment = lambda.FunctionEnvironmentArgs{
 		Variables: pulumi.ToStringMapOutput(map[string]pulumi.StringOutput{
@@ -59,13 +62,16 @@ func NewFuncBucket(ctx *pulumi.Context, name string, args *FuncBucketArgs, opts 
 		}),
 	}
 
-	_, err = pieces.NewCompanyFunc(ctx, fmt.Sprintf("%s-companyfunc", name), &args.CompanyFuncArgs, pulumi.Parent(componentResource))
+	fn, err := pieces.NewCompanyFunc(ctx, fmt.Sprintf("%s-companyfunc", name), &args.CompanyFuncArgs, pulumi.Parent(componentResource))
 
 	if err != nil {
 		return nil, err
 	}
 
 	ctx.RegisterResourceOutputs(componentResource, pulumi.Map{})
+
+	componentResource.CompanyBucket = bk
+	componentResource.CompanyFunc = fn
 
 	return componentResource, nil
 }
